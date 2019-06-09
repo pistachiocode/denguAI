@@ -1,0 +1,51 @@
+---
+title: "01.01_data_exploration"
+author: "Rocio"
+date: "4/19/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{python}
+import os
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import dengue_utils as dutils
+import dsutils as du
+
+os.chdir("/Users/rocio/Dropbox/DataScience/dengAI/scripts")
+
+features_train = pd.read_csv(dutils.FEATURES_TRAIN_PATH)
+labels_train = pd.read_csv(dutils.LABELS_TRAIN_PATH)
+
+features_test = pd.read_csv(dutils.FEATURES_TEST_PATH)
+
+
+# Join of train features and labels features
+
+train_dataset = features_train.merge(labels_train, 
+                                    left_on=['city', 'year', 'weekofyear'], 
+                                    right_on=['city', 'year', 'weekofyear'],
+                                    how='inner')
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
