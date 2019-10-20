@@ -61,14 +61,18 @@ def enet(X, y):
 #  Plots
 # ------------------------------
 
-def show_boxplot(df, features=None, exclude=[], figsize=(6, 8)):
+def show_boxplot(df, features=None, exclude=[], figsize=(12, 15)):
     
+    features_boxplot = []
     if features==None:
         features = df.columns
     
-    features_boxplot = df.select_dtypes(exclude=['O']).columns
-    features_boxplot = features_boxplot.drop(exclude)
-    
+    for column in features:
+        if column not in exclude and is_numeric_feature(df, column):
+            features_boxplot.append(column)
+        else:
+            printlog("show_bloxplot: omiting " + column)
+
     # Initialize the figure with a logarithmic x axis
     f, ax = plt.subplots(figsize=figsize)
     
@@ -87,13 +91,12 @@ def show_lineplot(df, xvalue, yvalue, hue=None, figsize=(15, 10)):
 
     # Plot the responses for different events and regions
     sns.lineplot(x=xvalue, y=yvalue, hue=hue, data=df)
- 
     
 def show_heatmap(df, exclude=[]):
     
     plt.figure(figsize=(18,18))
 
-    font = {'size'   : 8}
+    font = {'size'   : 12}
 
     plt.rc('font', **font)
 
@@ -117,7 +120,7 @@ def show_feature_correlation(df, label, title = "", exclude=[]):
     values = df_corr.values
     clrs = ['grey' if (np.abs(x) < 0.3) else '#A5DF00' for x in values ]
     ax = sns.barplot(y=df_corr.index, x=label, data=df_corr, palette=clrs)
-
+    ax.axes.set_title(title, fontsize=30)
 
 def show_scatterplot_matrix(df, y, ylabel, exclude=[]):
     
@@ -138,8 +141,7 @@ def show_scatterplot_matrix(df, y, ylabel, exclude=[]):
         ax.axes.set_title(column,fontsize=16)
         ax.set_xlabel(column, fontsize=12)
         ax.set_ylabel(ylabel, fontsize=12)
-    
-
+        
 # ------------------------------
 #  Utils
 # ------------------------------

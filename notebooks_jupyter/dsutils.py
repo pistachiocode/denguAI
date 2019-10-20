@@ -83,14 +83,18 @@ def show_boxplot(df, features=None, exclude=[], figsize=(12, 15)):
     ax.xaxis.grid(True)
     ax.set(ylabel="")
     sns.despine(trim=True, left=True)
+    
+    return ax
 
 
     
 def show_lineplot(df, xvalue, yvalue, hue=None, figsize=(15, 10)):
-    f, ax = plt.subplots(figsize=(15, 10))
+    f, ax = plt.subplots(figsize=figsize)
 
     # Plot the responses for different events and regions
-    sns.lineplot(x=xvalue, y=yvalue, hue=hue, data=df)
+    ax = sns.lineplot(x=xvalue, y=yvalue, hue=hue, data=df)
+    
+    return ax
     
 def show_heatmap(df, exclude=[]):
     
@@ -104,7 +108,8 @@ def show_heatmap(df, exclude=[]):
         df_corr = df.drop(c, axis=1).corr()
     
     ax = sns.heatmap(df_corr, annot=True, cmap="coolwarm")
-
+    
+    return ax
     
 def show_feature_correlation(df, label, title = "", exclude=[]):
     
@@ -121,6 +126,8 @@ def show_feature_correlation(df, label, title = "", exclude=[]):
     clrs = ['grey' if (np.abs(x) < 0.3) else '#A5DF00' for x in values ]
     ax = sns.barplot(y=df_corr.index, x=label, data=df_corr, palette=clrs)
     ax.axes.set_title(title, fontsize=30)
+    
+    return ax
 
 def show_scatterplot_matrix(df, y, ylabel, exclude=[]):
     

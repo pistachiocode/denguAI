@@ -53,6 +53,35 @@ def load_test_dataset():
 # ------------------------------
 
 
+def temperature_conversion_features(data, feature, new_feature):
+    
+    if feature in data.columns:
+        printlog("temperature conversion: kelvin to celsius " + feature + " to " + new_feature)
+        data[new_feature] = pytemperature.k2c(data[feature])
+
+
+def temperature_conversion(data):
+    """
+        This method converts some features to kelvin to celsius.
+    """
+    
+    features = ['reanalysis_air_temp_k', 'reanalysis_dew_point_temp_k', 
+                'reanalysis_max_air_temp_k', 'reanalysis_min_air_temp_k',
+                'reanalysis_avg_temp_k']
+    
+    new_features = ['reanalysis_air_temp_c', 'reanalysis_dew_point_temp_c', 
+                    'reanalysis_max_air_temp_c', 'reanalysis_min_air_temp_c',
+                    'reanalysis_avg_temp_c']
+    
+    
+    for i,feature in enumerate(features):
+        datau = temperature_conversion_features(data, feature, new_features[i])
+        
+    data = data.drop(features, axis=1)
+    
+    return (data)
+
+
 def remove_outliers_iqr(data, feature, exclude = list()):
     """
         Remove outliers of a feature using IQR method. This method returns

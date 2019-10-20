@@ -2,32 +2,43 @@
 # coding: utf-8
 
 # DengAI Competition
- 
+
 # RStudio configuration
 
+"""
 library(reticulate)
-reticulate::use_python('/anaconda3/bin')
+reticulate::use_python('/Users/rocio/anaconda3/bin/python')
 
 reticulate::repl_python()
 
+"""
 # Import libraries
-
 import os
+os.chdir("/Users/rocio/Dropbox/DataScience/dengAI/scripts")
+
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import dengue_utils as dutils
 import dsutils as du
+import pytemperature 
+
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
+
+SAVE_PLOTS = True
 
 # -------------------
 # Init
 # -------------------
 
-os.chdir("/Users/rocio/Dropbox/DataScience/dengAI/scripts")
+
 
 features_train = pd.read_csv(dutils.FEATURES_TRAIN_PATH)
-labels_train = pd.read_csv(dutils.LABELS_TRAIN_PATH)
+labels_train   = pd.read_csv(dutils.LABELS_TRAIN_PATH)
 
 features_test = pd.read_csv(dutils.FEATURES_TEST_PATH)
 
@@ -44,40 +55,81 @@ train_dataset = features_train.merge(labels_train,
 # 1. Boxplots all features
 # -----------------------
 
-du.show_boxplot(train_dataset, exclude=['year'])
-plt.savefig(dutils.GRAPH_PATH + '/01.01_boxplot_allfeatures.png', bbox_inches="tight")
+du.show_boxplot(train_dataset, exclude=['year'], figsize=(5,5))
+if SAVE_PLOTS:
+    plt.savefig(dutils.GRAPH_PATH + '/01.01_boxplot_allfeatures.png', bbox_inches="tight")
 
-# Conversion kelvin to celsius
-train_dataset = dutils.temperature_conversion(train_dataset)
+# Temperature features in kelvin conversion (kelvin to celsius)
+ 
+temp_features = ['reanalysis_air_temp_k', 'reanalysis_dew_point_temp_k', 
+                 'reanalysis_max_air_temp_k', 'reanalysis_min_air_temp_k',
+                 'reanalysis_avg_temp_k']
 
-du.show_boxplot(train_dataset, exclude=['year'])
-plt.savefig(dutils.GRAPH_PATH + '/01.02_boxplot_allfeatures_celcius.png', bbox_inches="tight")
+train_dataset[temp_features] = pytemperature.k2c(train_dataset[temp_features])
 
-# -----------------------
+
+du.show_boxplot(train_dataset, exclude=['year'], figsize=(5,5))
+if SAVE_PLOTS:
+  plt.savefig(dutils.GRAPH_PATH + '/01.02_boxplot_allfeatures_celcius.png', bbox_inches="tight")
+
+# --------------------------
 # 2. Heatmap - correlation
-# -----------------------
+# --------------------------
 
 # Correlation matrix
 du.show_heatmap(train_dataset, exclude = ['city'])
-plt.savefig(dutils.GRAPH_PATH + '/01.03_heatmap_correlations.png', bbox_inches="tight")
+if SAVE_PLOTS:
+    plt.savefig(dutils.GRAPH_PATH + '/01.03_heatmap_correlations.png', bbox_inches="tight")
+    
+# Correlation matrix for each city
+
+train_dataset_iquitos = train_dataset.loc[train_dataset['city']=='iq',:]
+train_dataset_sanjuan = train_dataset.loc[train_dataset['city']=='sj',:]
+
+du.show_heatmap(train_dataset_iquitos, exclude = ['city'])
+if SAVE_PLOTS:
+    plt.savefig(dutils.GRAPH_PATH + '/01.04_heatmap_correlations_iquitos.png', bbox_inches="tight")    
+
+du.show_heatmap(train_dataset_sanjuan, exclude = ['city'])
+if SAVE_PLOTS:        
+    plt.savefig(dutils.GRAPH_PATH + '/01.05_heatmap_correlations_sanjuan.png', bbox_inches="tight")   
+
+
+# -----------------------------
+# 3. Features correlation barplot
+# ----------------------------
+
+for city in train_dataset['city'].unique():
+  
+  train_dataset_city = train_dataset[train_dataset['city'] == city]
+  
+  du.show_feature_correlation(train_dataset_city, 'total_cases', 'Features correlations city {}'.format(city))
+  
+  if SAVE_PLOTS: 
+      plt.savefig(dutils.GRAPH_PATH + '/01.06_barplot_feature_vs_label_corr_{}.png'.format(city), bbox_inches="tight")
+
 
 # -----------------------
-# 3. Line plots
+# 4. Line plots
 # -----------------------
 
 train_dataset['week_start_date'] = pd.to_datetime(train_dataset['week_start_date'])
 
 du.show_lineplot(train_dataset, xvalue='week_start_date', yvalue='total_cases', hue='city')
-plt.savefig(dutils.GRAPH_PATH + '/01.04_lineplots_totalcases.png', bbox_inches="tight")
+if SAVE_PLOTS:
+    plt.savefig(dutils.GRAPH_PATH + '/01.07_lineplots_totalcases.png', bbox_inches="tight")
 
-du.show_lineplot(train_dataset, xvalue='week_start_date', yvalue='reanalysis_avg_temp_c', hue='city')
-plt.savefig(dutils.GRAPH_PATH + '/01.04_lineplots_reanalysis_avg_temp_c.png', bbox_inches="tight")
+du.show_lineplot(train_dataset, xvalue='week_start_date', yvalue='reanalysis_avg_temp_k', hue='city')
+if SAVE_PLOTS:
+    plt.savefig(dutils.GRAPH_PATH + '/01.08_lineplots_reanalysis_avg_temp_c.png', bbox_inches="tight")
 
 du.show_lineplot(train_dataset, xvalue='week_start_date', yvalue='reanalysis_relative_humidity_percent', hue='city')
-plt.savefig(dutils.GRAPH_PATH + '/01.04_lineplots_reanalysis_relative_humidity_percent.png', bbox_inches="tight")
+if SAVE_PLOTS:
+    plt.savefig(dutils.GRAPH_PATH + '/01.09_lineplots_reanalysis_relative_humidity_percent.png', bbox_inches="tight")
 
 du.show_lineplot(train_dataset, xvalue='week_start_date', yvalue='precipitation_amt_mm', hue='city')
-plt.savefig(dutils.GRAPH_PATH + '/01.04_lineplots_precipitation_amt_mm.png', bbox_inches="tight")
+if SAVE_PLOTS:
+    plt.savefig(dutils.GRAPH_PATH + '/01.10_lineplots_precipitation_amt_mm.png', bbox_inches="tight")
 
 
 # -----------------------
@@ -112,7 +164,7 @@ du.show_scatterplot_matrix(train_dataset,
                            ylabel = "Total Sases", 
                            exclude = ['city', 'total_cases','week_start_date'])    
 
-plt.savefig(dutils.GRAPH_PATH + '/01.05_scatterplots_label_vs_features.png', bbox_inches="tight")
+plt.savefig(dutils.GRAPH_PATH + '/01.11_scatterplots_label_vs_features.png', bbox_inches="tight")
 
 
 for city in  train_dataset['city'].unique():
@@ -124,19 +176,8 @@ for city in  train_dataset['city'].unique():
                              ylabel = "Total Sases", 
                              exclude = ['city', 'total_cases','week_start_date'])    
   
-  plt.savefig(dutils.GRAPH_PATH + '/01.05_scatterplots_label_vs_features_{}.png'.format(city), bbox_inches="tight")
+  plt.savefig(dutils.GRAPH_PATH + '/01.12_scatterplots_label_vs_features_{}.png'.format(city), bbox_inches="tight")
 
-# -----------------------------
-# 5. Features correlation barplot
-# ----------------------------
-
-for city in train_dataset['city'].unique():
-  
-  train_dataset_city = train_dataset[train_dataset['city'] == city]
-  
-  du.show_feature_correlation(train_dataset_city, 'total_cases', 'Features correlations city {}'.format(city))
-  
-  plt.savefig(dutils.GRAPH_PATH + '/01.06_barplot_feature_vs_label_corr_{}.png'.format(city), bbox_inches="tight")
 
 
 # ## Add month of the year
